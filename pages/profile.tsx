@@ -1,50 +1,62 @@
 import React, { useEffect } from "react";
 import Head from "next/head";
 import {
-  CircularProgress,
   Container,
   Grid2 as Grid,
   Typography,
 } from "@mui/material";
-import { useRouter } from "next/router";
 import Header from "@/components/Header";
 import { ProfileResume } from "@/components/ProfileResume";
 import { useGetUser } from "@/hooks/useGetUser";
 import { RepositoriesList } from "@/components/RepositoriesList";
-import { useGetRepositories } from "@/hooks/useGetRepositories";
 import { FollowerList } from "@/components/FollowerList";
 import { useGetFollowers } from "@/hooks/useGetFollowers";
+import { useGet } from "@/hooks/useGetInstance";
+import { AllowedEntities, Repository } from "@/utils/types";
+import HandleGridLoadingAndErrorComponent from "@/components/Loading";
+import { useRouter } from "next/router";
 
 export default function UserProfile() {
-  const router = useRouter();
-  const { user, loading, error, getUser } = useGetUser(
-    router.query.username as string
-  );
-
-  const { repositories, getRepositories } = useGetRepositories(null);
-
-  const { followers, getFollowers } = useGetFollowers(null);
+  const { query: { username = '' } } = useRouter();
+  const { user: userInstance, loading: loadingUser, error: errorUser, getUser } = useGetUser(username as string);
+  const { data: repositoriesInstances,
+    loading: loadingRepositories,
+    error: errorRepositories,
+    getInstance
+  } = useGet(AllowedEntities.REPO, {
+    sort: "pushed",
+    direction: "desc",
+    per_page: 10,
+    username: username as string,
+  });
+  const repositories: Repository[] | undefined = repositoriesInstances as unknown as Repository[] | [];
+  const {
+    followers: followerInstances,
+    loading: loadingFollowers,
+    error: errorFollowers,
+    getFollowers
+  } = useGetFollowers(null);
 
   useEffect(() => {
-    if (router.query.username) {
-      getUser(router.query.username as string);
+    if (username) {
+      getUser();
     }
-  }, [router.query.username]);
+  }, [username]);
 
   useEffect(() => {
-    if (user) {
-      getRepositories(user.login);
-      getFollowers(user.login);
+    if (userInstance) {
+      getInstance(userInstance.login);
+      getFollowers(userInstance.login);
     }
-  }, [user]);
+  }, [userInstance]);
 
   return (
     <>
       <Head>
-        <title>{`YAGUS - ${user?.login}`}</title>
+        <title>{`YAGUS - ${userInstance?.login}`}</title>
         <meta
           name="description"
-          content={`Perfil de usuario de ${user?.login}`}
+          content={`Perfil de usuario de ${userInstance?.login}`}
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
@@ -53,16 +65,16 @@ export default function UserProfile() {
         <Header />
 
         <Grid container size={12} spacing={4} sx={{ padding: "1rem" }}>
-          {loading && <CircularProgress />}
-          {error && <Typography color="error">{error}</Typography>}
-          {user && (
+          <HandleGridLoadingAndErrorComponent loading={loadingUser} error={errorUser} />
+          {userInstance && (
             <>
-              <ProfileResume user={user} />
+              <ProfileResume user={userInstance} />
             </>
           )}
         </Grid>
         <Grid container size={12} spacing={8} sx={{ display: "flex" }}>
           <Grid size={{ sm: 6, xs: 12 }}>
+            <HandleGridLoadingAndErrorComponent loading={loadingRepositories} error={errorRepositories} />
             <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
               Repositorios
             </Typography>
@@ -71,11 +83,12 @@ export default function UserProfile() {
             </Grid>
           </Grid>
           <Grid size={{ sm: 6, xs: 12 }}>
+            <HandleGridLoadingAndErrorComponent loading={loadingFollowers} error={errorFollowers} />
             <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
               Seguidores
             </Typography>
             <Grid container size={12} spacing={2}>
-              <FollowerList followers={followers} />
+              <FollowerList followers={followerInstances} />
             </Grid>
           </Grid>
         </Grid>

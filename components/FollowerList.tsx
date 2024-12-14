@@ -16,7 +16,7 @@ export const FollowerList = ({ followers }: FollowerListProps) => (
       width: { sx: "100%", sm: "50%" },
     }}
   >
-    {followers.map((follower) => (
+    {followers?.length && followers.map((follower) => (
       <UserCard
         key={follower.id}
         avatarSrc={follower.avatar_url}

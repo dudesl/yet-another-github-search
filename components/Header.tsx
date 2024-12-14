@@ -7,7 +7,7 @@ export default function Header() {
   const theme = useTheme();
   const router = useRouter();
 
-  const handleNavigation = (e: any) => {
+  const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();
     router.push(`/`);
   };

@@ -1,5 +1,7 @@
 {
   "extends": ["next/core-web-vitals", "next/typescript"],
-  "editor.formatOnSave": true,
-  "editor.formatOnType": true
+  "rules": {
+    "react-hooks/exhaustive-deps": "off",
+    "max-len": ["warn", { "code": 120 }]
+  }
 }

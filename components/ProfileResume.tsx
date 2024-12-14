@@ -231,7 +231,7 @@ export const ProfileResume = ({ user }: ProfileResumeProps) => {
               component="span"
               sx={{ display: "flex", justifyItems: "center" }}
             >
-              Repos
+              Repositorios
             </Typography>
           </Box>
         </Grid>

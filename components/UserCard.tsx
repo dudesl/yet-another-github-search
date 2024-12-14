@@ -9,8 +9,7 @@ import {
   IconButton,
 } from "@mui/material";
 import theme from "@/styles/theme";
-import { useEffect, useState } from "react";
-import { MouseEvent as ReactMouseEvent } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 export interface UserCardProps {
@@ -27,7 +26,7 @@ export const UserCard = ({ avatarSrc, login }: UserCardProps) => {
     setIsFavorite(favorites[login] || false);
   }, [login]);
 
-  const handleFavoriteClick = (e: any) => {
+  const handleFavoriteClick = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     const favorites = JSON.parse(localStorage.getItem("favorites") || "{}");
     favorites[login] = !isFavorite;
@@ -35,7 +34,15 @@ export const UserCard = ({ avatarSrc, login }: UserCardProps) => {
     setIsFavorite(!isFavorite);
   };
 
-  const handleNavigation = (e: any, profileId: string) => {
+  interface NavigationEvent extends MouseEvent<HTMLAnchorElement> {
+    preventDefault: () => void;
+  }
+
+  interface HandleNavigation {
+    (e: NavigationEvent, profileId: string): void;
+  }
+
+  const handleNavigation: HandleNavigation = (e, profileId) => {
     e.preventDefault();
     router.push(`/profile?username=${profileId}`);
   };

@@ -1,19 +1,23 @@
-import React, { useCallback, useState } from "react";
+import React, { ChangeEvent, useCallback, useState } from "react";
 import Head from "next/head";
-import { Box, CircularProgress, Container, Grid2 as Grid } from "@mui/material";
+import { Box, Container, Grid2 as Grid } from "@mui/material";
 import Header from "@/components/Header";
 import { SearchBar } from "@/components/SearchBar";
 import { UserCard } from "@/components/UserCard";
 import { PaginationSearch } from "@/components/PaginationSearch";
 import { searchUsers } from "@/utils/github";
 import { GitHubUser } from "@/utils/types";
+import HandleGridLoadingAndErrorComponent from "@/components/Loading";
 
 export default function Home() {
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState<GitHubUser[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+
+  //@NOTE: This page size is only for testing purpose, extract this information from API.
   const pageSize = 20;
+
   const [pagination, setPagination] = useState({
     count: 0,
     from: 0,
@@ -35,8 +39,8 @@ export default function Home() {
         );
         setUsers(users);
         setPagination((prev) => ({ ...prev, count }));
-      } catch (error: any) {
-        setError(error);
+      } catch (error) {
+        setError("Error al realizar la busqueda");
         console.error("Error buscando usuarios:", error);
       } finally {
         setLoading(false);
@@ -46,14 +50,15 @@ export default function Home() {
   );
 
   const onChangeInput = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setQuery(e.target.value);
+      setPagination((prev) => ({ ...prev, page: 1 }));
     },
     []
   );
 
   const handlePageChange = useCallback(
-    async (event: any, page: number) => {
+    async (event: ChangeEvent<unknown>, page: number) => {
       const from = (page - 1) * pageSize;
       const to = (page - 1) * pageSize + pageSize;
       setPagination((prev) => ({ ...prev, from, to, page }));
@@ -63,8 +68,8 @@ export default function Home() {
         const { users, count } = await searchUsers(query, from, to, page);
         setUsers(users);
         setPagination((prev) => ({ ...prev, count }));
-      } catch (error: any) {
-        setError(error);
+      } catch (error) {
+        setError("Error al intentar cambiar de pagina");
         console.error("Error cambiando de página:", error);
       } finally {
         setLoading(false);
@@ -102,7 +107,7 @@ export default function Home() {
             flexDirection={"column"}
             sx={{ minHeight: "20rem", justifyContent: "space-around" }}
           >
-            {loading && <CircularProgress />}
+            <HandleGridLoadingAndErrorComponent loading={loading} error={error} />
             {users.length > 0 && !loading && (
               <>
                 <Box
@@ -125,10 +130,12 @@ export default function Home() {
                 </Box>
               </>
             )}
-            <PaginationSearch
-              onPageChange={handlePageChange}
-              pagination={{ ...pagination }}
-            />
+            {users.length > 0 && !loading && 
+              <PaginationSearch
+                onPageChange={handlePageChange}
+                pagination={{ ...pagination }}
+              />
+            }
           </Grid>
           <Grid
             size={12}

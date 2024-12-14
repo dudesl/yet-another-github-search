@@ -14,7 +14,7 @@ dayjs.locale("es");
 import theme from "@/styles/theme";
 
 interface RepositoriesListProps {
-  repositories: Repository[];
+  repositories: Repository[] | undefined;
 }
 
 const RepositoryItem = ({ repo }: { repo: Repository }) => (
@@ -30,6 +30,7 @@ const RepositoryItem = ({ repo }: { repo: Repository }) => (
   >
     <Link
       href={repo.html_url}
+      target="_blank"
       sx={{
         color: theme.palette.primary.dark,
         textDecoration: "none",
@@ -78,8 +79,8 @@ const RepositoryItem = ({ repo }: { repo: Repository }) => (
 
 export const RepositoriesList = ({ repositories }: RepositoriesListProps) => (
   <Stack sx={{ width: "100%" }}>
-    {repositories.map((repo) => (
-      <RepositoryItem repo={repo} />
+    {repositories?.length && repositories.map((repo) => (
+      <RepositoryItem repo={repo} key={repo.id} />
     ))}
   </Stack>
 );

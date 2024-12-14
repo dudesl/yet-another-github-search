@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Box, Pagination } from "@mui/material";
 
 interface PaginationSearchProps {
